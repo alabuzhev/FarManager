@@ -1211,9 +1211,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="$(BootstrapDir)farlang.templ">
-      <Filter>Generated Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="copyright.inc.m4">
       <Filter>Dependencies</Filter>
     </CustomBuild>
@@ -1226,9 +1223,6 @@
     <CustomBuild Include="farcolor.hpp">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="farlang.templ.m4">
-      <Filter>Dependencies</Filter>
-    </CustomBuild>
     <CustomBuild Include="farversion.inc.m4">
       <Filter>Dependencies</Filter>
     </CustomBuild>
@@ -1236,6 +1230,9 @@
       <Filter>Dependencies</Filter>
     </CustomBuild>
     <CustomBuild Include="*.hlf.m4">
+      <Filter>Dependencies</Filter>
+    </CustomBuild>
+    <CustomBuild Include="*.lng.m4">
       <Filter>Dependencies</Filter>
     </CustomBuild>
     <CustomBuild Include="plugin.hpp">

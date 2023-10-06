@@ -198,13 +198,8 @@ CPPFLAGS += $(ADDINCLUDE)
 .PHONY: all
 all:
 	$(MAKE) -f $(THIS_MAKE) $(MK_FLAGS) dirs
-	$(MAKE) -f $(THIS_MAKE) $(MK_FLAGS) lng depfile include docs $(TESTOBJS)
+	$(MAKE) -f $(THIS_MAKE) $(MK_FLAGS) depfile include docs $(TESTOBJS)
 	$(MAKE) -f $(THIS_MAKE) $(MK_FLAGS) build
-
-.PHONY: lng
-lng: $(BOOTSTRAPDIR)farlang.templ
-	@echo Generating language files
-	$(LGEN) -nc -i "$(BOOTSTRAPDIR)lang.ini" -oh "$(BOOTSTRAPDIR)" -ol "$(EXEDIR)" "$(BOOTSTRAPDIR)farlang.templ"
 
 .PHONY: depfile
 depfile:
@@ -227,14 +222,26 @@ include: \
 
 .PHONY: docs
 docs: \
+	$(EXEDIR)FarCze.hlf \
 	$(EXEDIR)FarEng.hlf \
-	$(EXEDIR)FarRus.hlf \
+	$(EXEDIR)FarGer.hlf \
 	$(EXEDIR)FarHun.hlf \
 	$(EXEDIR)FarPol.hlf \
-	$(EXEDIR)FarGer.hlf \
-	$(EXEDIR)FarUkr.hlf \
-	$(EXEDIR)FarCze.hlf \
+	$(EXEDIR)FarRus.hlf \
 	$(EXEDIR)FarSky.hlf \
+	$(EXEDIR)FarUkr.hlf \
+	$(EXEDIR)FarBel.lng \
+	$(EXEDIR)FarCze.lng \
+	$(EXEDIR)FarEng.lng \
+	$(EXEDIR)FarGer.lng \
+	$(EXEDIR)FarHun.lng \
+	$(EXEDIR)FarIta.lng \
+	$(EXEDIR)FarLit.lng \
+	$(EXEDIR)FarPol.lng \
+	$(EXEDIR)FarRus.lng \
+	$(EXEDIR)FarSky.lng \
+	$(EXEDIR)FarSpa.lng \
+	$(EXEDIR)FarUkr.lng \
 	$(EXEDIR)File_id.diz \
 	$(EXEDIR)Far.exe.example.ini
 
@@ -300,13 +307,13 @@ $(BOOTSTRAPDIR)%: %.m4 $(VERSION_DEPS)
 	$(MSG)
 	$(M4) $< > $@
 
+$(EXEDIR)%: %.m4 $(VERSION_DEPS)
+	$(MSG)
+	$(M4) $< > $@
+
 $(EXEDIR)%.hlf: %.hlf.m4 $(VERSION_DEPS)
 	$(MSG)
 	$(GAWK) -f scripts/mkhlf.awk $< | $(M4) > $@
-
-$(EXEDIR)File_id.diz: File_id.diz.m4 $(VERSION_DEPS)
-	$(MSG)
-	$(M4) $< > $@
 
 $(EXEDIR)Far.exe.example.ini: Far.exe.example.ini
 	$(MSG)

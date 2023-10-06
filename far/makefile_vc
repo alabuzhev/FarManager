@@ -244,11 +244,6 @@ CPPFLAGS = $(CPPFLAGS) /D "ENABLE_TESTS"
 ALL: AllDirs lng depfile include docs $(TEST_OBJS)
 	$(MAKE) /nologo /f makefile_vc build USEDEPS=1
 
-.PHONY: lng
-lng: $(BOOTSTRAPDIR)farlang.templ
-	@echo Generating language files
-	tools\lng.generator.exe -nc -i "$(BOOTSTRAPDIR)lang.ini" -oh "$(BOOTSTRAPDIR)" -ol "$(OUTDIR)" "$(BOOTSTRAPDIR)farlang.templ"
-
 .PHONY: depfile
 depfile:
 	@echo Rebuilding dependencies...
@@ -267,18 +262,33 @@ include: \
 	"$(FARINCLUDE)\vc_crt_fix_ulink.cpp"
 
 HLFS = \
+	"$(OUTDIR)\FarCze.hlf" \
 	"$(OUTDIR)\FarEng.hlf" \
-	"$(OUTDIR)\FarRus.hlf" \
+	"$(OUTDIR)\FarGer.hlf" \
 	"$(OUTDIR)\FarHun.hlf" \
 	"$(OUTDIR)\FarPol.hlf" \
-	"$(OUTDIR)\FarGer.hlf" \
-	"$(OUTDIR)\FarUkr.hlf" \
-	"$(OUTDIR)\FarCze.hlf" \
+	"$(OUTDIR)\FarRus.hlf" \
 	"$(OUTDIR)\FarSky.hlf" \
+	"$(OUTDIR)\FarUkr.hlf" \
+
+LNGS = \
+	"$(OUTDIR)\FarBel.lng" \
+	"$(OUTDIR)\FarCze.lng" \
+	"$(OUTDIR)\FarEng.lng" \
+	"$(OUTDIR)\FarGer.lng" \
+	"$(OUTDIR)\FarHun.lng" \
+	"$(OUTDIR)\FarIta.lng" \
+	"$(OUTDIR)\FarLit.lng" \
+	"$(OUTDIR)\FarPol.lng" \
+	"$(OUTDIR)\FarRus.lng" \
+	"$(OUTDIR)\FarSky.lng" \
+	"$(OUTDIR)\FarSpa.lng" \
+	"$(OUTDIR)\FarUkr.lng" \
 
 .PHONY: docs
 docs: \
 	$(HLFS) \
+	$(LNGS) \
 	"$(OUTDIR)\File_id.diz"\
 	"$(OUTDIR)\Far.exe.example.ini"
 
@@ -372,6 +382,8 @@ MSG=@echo Generating $@
 
 VERSION_DEPS=farversion.m4 vbuild.m4
 
+.SUFFIXES: .hlf.m4 .lng.m4
+
 $(BOOTSTRAPDIR)Far.exe.manifest \
 $(BOOTSTRAPDIR)copyright.inc \
 $(BOOTSTRAPDIR)farversion.inc \
@@ -383,10 +395,15 @@ $(OUTDIR)\File_id.diz: $(@F).m4 $(VERSION_DEPS)
 
 $(HLFS): $(VERSION_DEPS)
 
-.SUFFIXES: .hlf.m4
 .hlf.m4{$(OUTDIR)}.hlf:
 	$(MSG)
 	$(GAWK) -f scripts\mkhlf.awk $< | $(M4) > $@
+
+$(LNGS): $(VERSION_DEPS)
+
+.lng.m4{$(OUTDIR)}.lng:
+	$(MSG)
+	$(M4) $(@F).m4 > $@
 
 $(OUTDIR)\Far.exe.example.ini: $(@F)
 	$(MSG)

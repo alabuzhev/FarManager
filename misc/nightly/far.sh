@@ -43,6 +43,18 @@ dos2unix FarGer.hlf.m4
 dos2unix FarUkr.hlf.m4
 dos2unix FarCze.hlf.m4
 dos2unix FarSky.hlf.m4
+dos2unix FarBel.lng.m4
+dos2unix FarCze.lng.m4
+dos2unix FarEng.lng.m4
+dos2unix FarGer.lng.m4
+dos2unix FarHun.lng.m4
+dos2unix FarIta.lng.m4
+dos2unix FarLit.lng.m4
+dos2unix FarPol.lng.m4
+dos2unix FarRus.lng.m4
+dos2unix FarSky.lng.m4
+dos2unix FarSpa.lng.m4
+dos2unix FarUkr.lng.m4
 gawk -f ./scripts/mkhlf.awk FarEng.hlf.m4 | $M4CMDP | unix2dos -m > $OUTDIR/FarEng.hlf
 gawk -f ./scripts/mkhlf.awk FarRus.hlf.m4 | $M4CMDP | unix2dos -m > $OUTDIR/FarRus.hlf
 gawk -f ./scripts/mkhlf.awk FarHun.hlf.m4 | $M4CMDP | unix2dos -m > $OUTDIR/FarHun.hlf
@@ -51,8 +63,18 @@ gawk -f ./scripts/mkhlf.awk FarGer.hlf.m4 | $M4CMDP | unix2dos -m > $OUTDIR/FarG
 gawk -f ./scripts/mkhlf.awk FarUkr.hlf.m4 | $M4CMDP | unix2dos -m > $OUTDIR/FarUkr.hlf
 gawk -f ./scripts/mkhlf.awk FarCze.hlf.m4 | $M4CMDP | unix2dos -m > $OUTDIR/FarCze.hlf
 gawk -f ./scripts/mkhlf.awk FarSky.hlf.m4 | $M4CMDP | unix2dos -m > $OUTDIR/FarSky.hlf
-
-wine tools/lng.generator.exe -nc -oh ${BOOTSTRAPDIR} -ol $OUTDIR ${BOOTSTRAPDIR}farlang.templ
+gawk -f ./scripts/mkhlf.awk FarBel.lng.m4 | $M4CMDP | unix2dos -m > $OUTDIR/FarBel.lng
+gawk -f ./scripts/mkhlf.awk FarCze.lng.m4 | $M4CMDP | unix2dos -m > $OUTDIR/FarCze.lng
+gawk -f ./scripts/mkhlf.awk FarEng.lng.m4 | $M4CMDP | unix2dos -m > $OUTDIR/FarEng.lng
+gawk -f ./scripts/mkhlf.awk FarGer.lng.m4 | $M4CMDP | unix2dos -m > $OUTDIR/FarGer.lng
+gawk -f ./scripts/mkhlf.awk FarHun.lng.m4 | $M4CMDP | unix2dos -m > $OUTDIR/FarHun.lng
+gawk -f ./scripts/mkhlf.awk FarIta.lng.m4 | $M4CMDP | unix2dos -m > $OUTDIR/FarIta.lng
+gawk -f ./scripts/mkhlf.awk FarLit.lng.m4 | $M4CMDP | unix2dos -m > $OUTDIR/FarLit.lng
+gawk -f ./scripts/mkhlf.awk FarPol.lng.m4 | $M4CMDP | unix2dos -m > $OUTDIR/FarPol.lng
+gawk -f ./scripts/mkhlf.awk FarRus.lng.m4 | $M4CMDP | unix2dos -m > $OUTDIR/FarRus.lng
+gawk -f ./scripts/mkhlf.awk FarSky.lng.m4 | $M4CMDP | unix2dos -m > $OUTDIR/FarSky.lng
+gawk -f ./scripts/mkhlf.awk FarSpa.lng.m4 | $M4CMDP | unix2dos -m > $OUTDIR/FarSpa.lng
+gawk -f ./scripts/mkhlf.awk FarUkr.lng.m4 | $M4CMDP | unix2dos -m > $OUTDIR/FarUkr.lng
 
 wine cmd /c ../mysetnew.${DIRBIT}.bat
 

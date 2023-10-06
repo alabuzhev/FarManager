@@ -494,13 +494,6 @@ cl /nologo /c /Fo"$(IntDir)%(Filename)_c++.testobj" /TP api_test.c
       <AdditionalInputs>farversion.m4;vbuild.m4;%(AdditionalInputs)</AdditionalInputs>
       <Outputs>$(BootstrapDir)%(FileName);%(Outputs)</Outputs>
     </CustomBuild>
-    <CustomBuild Include="farlang.templ.m4">
-      <FileType>Document</FileType>
-      <Message>Compiling %(Identity)...</Message>
-      <Command>$(M4Cmd) %(Identity) &gt; $(BootstrapDir)%(FileName)</Command>
-      <AdditionalInputs>farversion.m4;vbuild.m4;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs>$(BootstrapDir)%(FileName);%(Outputs)</Outputs>
-    </CustomBuild>
     <CustomBuild Include="farversion.inc.m4">
       <FileType>Document</FileType>
       <Message>Compiling %(Identity)...</Message>
@@ -522,12 +515,12 @@ cl /nologo /c /Fo"$(IntDir)%(Filename)_c++.testobj" /TP api_test.c
       <AdditionalInputs>farversion.m4;vbuild.m4;%(AdditionalInputs)</AdditionalInputs>
       <Outputs>$(OutDir)%(FileName);%(Outputs)</Outputs>
     </CustomBuild>
-    <CustomBuild Include="$(BootstrapDir)farlang.templ">
+    <CustomBuild Include="*.lng.m4">
       <FileType>Document</FileType>
-      <Message>Generating language files based on %(Identity)...</Message>
-      <Command>tools\lng.generator.exe -nc -i $(BootstrapDir)lang.ini -oh $(BootstrapDir) -ol $(OutDir) %(Identity)</Command>
-      <AdditionalInputs>%(FileName)%(Extension).m4;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs>$(BootstrapDir)lang.inc;$(BootstrapDir)lang.ini;$(OutDir)\FarCze.lng;$(OutDir)\FarEng.lng;$(OutDir)\FarGer.lng;$(OutDir)\FarHun.lng;$(OutDir)\FarPol.lng;$(OutDir)\FarRus.lng;$(OutDir)\FarSpa.lng;$(OutDir)\FarSky.lng;$(OutDir)\FarIta.lng;$(OutDir)\FarUkr.lng;$(OutDir)\FarBel.lng;$(OutDir)\FarLit.lng;%(Outputs)</Outputs>
+      <Message>Compiling %(Identity)...</Message>
+      <Command>$(M4Cmd) %(Identity) &gt; $(OutDir)%(FileName)</Command>
+      <AdditionalInputs>farversion.m4;vbuild.m4;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs>$(OutDir)%(FileName);%(Outputs)</Outputs>
     </CustomBuild>
     <MASM Include="vc_crt_fix.asm">
       <PreprocessorDefinitions>$(Platform)</PreprocessorDefinitions>

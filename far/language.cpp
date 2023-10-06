@@ -268,7 +268,7 @@ struct lng_line
 		Text;
 };
 
-static lng_line parse_lng_line(const string_view str, bool ParseLabels)
+static lng_line parse_lng_line(const string_view str)
 {
 	//-- "Text"
 	if (str.starts_with(L'"'))
@@ -277,7 +277,6 @@ static lng_line parse_lng_line(const string_view str, bool ParseLabels)
 	}
 
 	//-- //[Label]
-	if (ParseLabels)
 	{
 		const auto Prefix = L"//["sv, Suffix = L"]"sv;
 		if (str.starts_with(Prefix) && str.ends_with(Suffix))
@@ -287,7 +286,7 @@ static lng_line parse_lng_line(const string_view str, bool ParseLabels)
 	}
 
 	//-- MLabel="Text"
-	if (ParseLabels && str.ends_with(L'"') && std::iswalpha(str.front()))
+	if (str.ends_with(L'"') && std::iswalpha(str.front()))
 	{
 		auto [Name, Value] = split(str);
 		inplace::trim(Name);
@@ -336,7 +335,7 @@ static void LoadCustomStrings(string_view const FileName, unordered_string_map<s
 
 	for (const auto& i: enum_lines(Stream, CustomFileCodepage))
 	{
-		switch (const auto Line = parse_lng_line(trim(i.Str), true); Line.Type)
+		switch (const auto Line = parse_lng_line(trim(i.Str)); Line.Type)
 		{
 		case lng_line_type::label:
 			SavedLabel = Line.Label;
@@ -392,6 +391,7 @@ void language::load(string_view const Path, string_view const Language, int Coun
 	const auto LoadLabels = !CustomStrings.empty();
 
 	string SavedLabel;
+	string_view LabelView;
 
 	os::fs::filebuf StreamBuffer(LangFile, std::ios::in);
 	std::istream Stream(&StreamBuffer);
@@ -399,16 +399,20 @@ void language::load(string_view const Path, string_view const Language, int Coun
 
 	for (const auto& i: enum_lines(Stream, LangFileCodePage))
 	{
-		switch (auto Line = parse_lng_line(trim(i.Str), LoadLabels); Line.Type)
+		switch (auto Line = parse_lng_line(trim(i.Str)); Line.Type)
 		{
 		case lng_line_type::label:
 			SavedLabel = Line.Label;
+			LabelView = SavedLabel;
 			break;
 
+		case lng_line_type::both:
+			LabelView = Line.Label;
+			[[fallthrough]];
 		case lng_line_type::text:
 			if (LoadLabels)
 			{
-				const auto Iterator = CustomStrings.find(SavedLabel);
+				const auto Iterator = CustomStrings.find(LabelView);
 				if (Iterator != CustomStrings.cend())
 				{
 					Line.Text = Iterator->second;
@@ -520,7 +524,7 @@ TEST_CASE("language.parser")
 
 	for (const auto& i: Tests)
 	{
-		const auto Result = parse_lng_line(i.Input, true);
+		const auto Result = parse_lng_line(i.Input);
 		REQUIRE(i.Result.Type == Result.Type);
 		REQUIRE(i.Result.Label == Result.Label);
 		REQUIRE(i.Result.Text == Result.Text);
