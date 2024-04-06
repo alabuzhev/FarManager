@@ -43,6 +43,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mix.hpp"
 #include "pathmix.hpp"
 #include "log.hpp"
+#include "imports.hpp"
 
 // Platform:
 #include "platform.hpp"
@@ -60,7 +61,7 @@ void save_file_with_replace(string_view const FileName, os::fs::attributes const
 {
 	const auto IsFileExists = FileAttributes != INVALID_FILE_ATTRIBUTES;
 
-	const auto UseTemporaryFile = IsFileExists && [&]
+	const auto UseTemporaryFile = IsFileExists && imports.ReplaceFile && [&]
 	{
 		if (!Global->Opt->EdOpt.SaveSafely)
 			return false;

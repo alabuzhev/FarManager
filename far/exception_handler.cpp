@@ -65,6 +65,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform.debug.hpp"
 #include "platform.env.hpp"
 #include "platform.fs.hpp"
+#include "platform.memory.hpp"
 #include "platform.process.hpp"
 #include "platform.version.hpp"
 
@@ -395,6 +396,9 @@ static void read_modules(std::span<HMODULE const> const Modules, string& To, str
 
 static void read_modules(string& To, string_view const Eol)
 {
+	if (!imports.EnumProcessModules)
+		return;
+
 	HMODULE ModulesStatic[1024];
 	std::vector<HMODULE> ModulesDynamic;
 
@@ -404,7 +408,7 @@ static void read_modules(string& To, string_view const Eol)
 
 	for (;;)
 	{
-		if (!EnumProcessModules(GetCurrentProcess(), Data, Size, &Needed))
+		if (!imports.EnumProcessModules(GetCurrentProcess(), Data, Size, &Needed))
 		{
 			const auto LastError = os::last_error();
 			far::format_to(To, L"{}"sv, LastError);
@@ -976,7 +980,7 @@ static DWORD get_console_host_pid_from_window()
 	// Apparently this is also the only way to do it on WOW64,
 	// since ProcessConsoleHostProcess doesn't work there.
 	// Yes, it's horrible, but it's better than nothing.
-	const auto ImeWnd = ImmGetDefaultIMEWnd(GetConsoleWindow());
+	const auto ImeWnd = ImmGetDefaultIMEWnd(imports.GetConsoleWindow());
 	if (!ImeWnd)
 		throw far_exception(error_state_ex{{ GetLastError(), 0 }});
 
@@ -1072,7 +1076,7 @@ static auto memory_status()
 
 	string MemoryStatus;
 
-	if (MEMORYSTATUSEX ms{ sizeof(ms) }; GlobalMemoryStatusEx(&ms))
+	if (MEMORYSTATUSEX ms{ sizeof(ms) }; os::memory::global_memory_status(ms))
 	{
 		MemoryStatus = far::format(
 			L"{} out of {} free ({}%)"sv,
@@ -1082,10 +1086,12 @@ static auto memory_status()
 		);
 	}
 
+	/*
 	if (PROCESS_MEMORY_COUNTERS pmc{ sizeof(pmc) }; GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc)))
 	{
 		far::format_to(MemoryStatus, L"{}{} used by the process"sv, MemoryStatus.empty()? L""sv : L"; "sv, size_to_str(pmc.PagefileUsage));
 	}
+	*/
 
 	return MemoryStatus;
 }
@@ -1656,7 +1662,7 @@ static string collect_information(
 
 				auto ThreadTitle = far::format(L"Thread {0} / 0x{0:X}"sv, Tid);
 
-				os::handle const Thread(OpenThread(THREAD_QUERY_INFORMATION | THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT, false, Tid));
+				os::handle const Thread;// (OpenThread(THREAD_QUERY_INFORMATION | THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT, false, Tid));
 				if (!Thread)
 				{
 					make_header(ThreadTitle, append_line);

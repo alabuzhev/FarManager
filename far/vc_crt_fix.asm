@@ -62,6 +62,9 @@ HOOK QueryDepthSList                        ,  4, :dword
 HOOK GetNumaHighestNodeNumber               ,  4, :dword
 HOOK GetLogicalProcessorInformation         ,  8, :dword, :dword
 HOOK SetThreadStackGuarantee                ,  4, :dword
+HOOK VerSetConditionMask                    , 16, :qword, :dword, :byte
+HOOK SetFilePointerEx                       , 20, :dword, :qword, :dword, :dword
+HOOK GetFileSizeEx                          ,  8, :dword, :dword
 endif
 HOOK InitializeCriticalSectionEx            , 12, :dword, :dword, :dword
 HOOK CompareStringEx                        , 36, :dword, :dword, :dword, :dword, :dword, :dword, :dword, :dword, :dword

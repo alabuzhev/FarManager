@@ -588,7 +588,12 @@ protected:
 
 	HWND console::GetWindow() const
 	{
-		const auto Window = GetConsoleWindow();
+		if (!imports.GetConsoleWindow)
+			return {};
+
+		const auto Window = imports.GetConsoleWindow();
+		if (!Window)
+			return {};
 
 		wchar_t ClassName[MAX_PATH];
 		if (const auto Size = GetClassName(Window, ClassName, static_cast<int>(std::size(ClassName))); Size)

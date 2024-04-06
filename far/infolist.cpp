@@ -69,6 +69,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Platform:
 #include "platform.fs.hpp"
+#include "platform.memory.hpp"
 
 // Common:
 #include "common.hpp"
@@ -444,7 +445,7 @@ void InfoList::DisplayObject()
 	if (SectionState[ILSS_MEMORYINFO].Show)
 	{
 		MEMORYSTATUSEX ms{ sizeof(ms) };
-		if (GlobalMemoryStatusEx(&ms))
+		if (os::memory::global_memory_status(ms))
 		{
 			PrintMetric(lng::MInfoMemoryCommittable, ms.ullTotalPageFile, ms.ullAvailPageFile);
 			PrintMetric(lng::MInfoMemoryAddressable, ms.ullTotalVirtual, ms.ullAvailVirtual);

@@ -103,7 +103,7 @@ namespace os::security
 				return false;
 
 			BOOL IsMember;
-			return CheckTokenMembership(nullptr, AdministratorsGroup.get(), &IsMember) && IsMember;
+			return false;// CheckTokenMembership(nullptr, AdministratorsGroup.get(), &IsMember) && IsMember;
 		}();
 
 		return Result;
