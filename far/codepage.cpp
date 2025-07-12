@@ -38,6 +38,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "exception_handler.hpp"
 #include "log.hpp"
 #include "plugin.hpp"
+#include "imports.hpp"
 
 // Platform:
 #include "platform.hpp"
@@ -93,7 +94,7 @@ static string_view extract_codepage_name(string_view const Str)
 
 static std::optional<cp_info> get_codepage_info(unsigned const Codepage, wchar_t const* const CodepageStr)
 {
-	if (CPINFOEX Info; GetCPInfoEx(Codepage, 0, &Info))
+	if (CPINFOEX Info; imports.GetCPInfoEx && imports.GetCPInfoEx(Codepage, 0, &Info))
 	{
 		return
 		{{

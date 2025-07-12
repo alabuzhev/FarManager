@@ -146,7 +146,7 @@ namespace os::fs
 
 		void find_volume_handle_closer::operator()(HANDLE Handle) const noexcept
 		{
-			if (!FindVolumeClose(Handle))
+			//if (!FindVolumeClose(Handle))
 				LOGWARNING(L"FindVolumeClose(): {}"sv, last_error());
 		}
 	}
@@ -686,7 +686,7 @@ namespace os::fs
 
 		if (Reset)
 		{
-			m_Handle.reset(FindFirstVolume(VolumeName, static_cast<DWORD>(std::size(VolumeName))));
+			//m_Handle.reset(FindFirstVolume(VolumeName, static_cast<DWORD>(std::size(VolumeName))));
 			if (!m_Handle)
 			{
 				return false;
@@ -694,7 +694,7 @@ namespace os::fs
 		}
 		else
 		{
-			if (!FindNextVolume(m_Handle.native_handle(), VolumeName, static_cast<DWORD>(std::size(VolumeName))))
+			//if (!FindNextVolume(m_Handle.native_handle(), VolumeName, static_cast<DWORD>(std::size(VolumeName))))
 			{
 				return false;
 			}
@@ -1189,9 +1189,12 @@ namespace os::fs
 
 		LARGE_INTEGER Distance, NewPointer;
 		Distance.QuadPart = m_Pointer;
-		if (!SetFilePointerEx(m_Handle.native_handle(), Distance, &NewPointer, FILE_BEGIN))
+		NewPointer.LowPart = SetFilePointer(m_Handle.native_handle(), Distance.LowPart, &Distance.HighPart, FILE_BEGIN);
+
+		if (NewPointer.LowPart == INVALID_SET_FILE_POINTER && GetLastError())
 			return;
 
+		NewPointer.HighPart = Distance.HighPart;
 		m_Pointer = NewPointer.QuadPart;
 		m_NeedSyncPointer = false;
 	}
@@ -1678,7 +1681,7 @@ namespace os::fs
 
 		bool create_hard_link(const wchar_t* FileName, const wchar_t* ExistingFileName, SECURITY_ATTRIBUTES* SecurityAttributes)
 		{
-			return ::CreateHardLink(FileName, ExistingFileName, SecurityAttributes) != FALSE;
+			return false;// ::CreateHardLink(FileName, ExistingFileName, SecurityAttributes) != FALSE;
 		}
 
 		bool copy_file(const wchar_t* ExistingFileName, const wchar_t* NewFileName, LPPROGRESS_ROUTINE ProgressRoutine, void* Data, BOOL* Cancel, DWORD CopyFlags)
@@ -1697,7 +1700,7 @@ namespace os::fs
 			if (!IgnoreAclErrorsSupported)
 				ReplaceFlags &= ~REPLACEFILE_IGNORE_ACL_ERRORS;
 
-			return ::ReplaceFile(ReplacedFileName, ReplacementFileName, EmptyToNull(BackupFileName), ReplaceFlags, nullptr, nullptr) != FALSE;
+			return imports.ReplaceFile(ReplacedFileName, ReplacementFileName, EmptyToNull(BackupFileName), ReplaceFlags, nullptr, nullptr) != FALSE;
 		}
 
 		bool detach_virtual_disk(const wchar_t* Object, VIRTUAL_STORAGE_TYPE& VirtualStorageType)
@@ -1742,7 +1745,7 @@ namespace os::fs
 
 		bool set_file_encryption(const wchar_t* FileName, bool Encrypt)
 		{
-			return (Encrypt? ::EncryptFile(FileName) : ::DecryptFile(FileName, 0)) != FALSE;
+			return false;// (Encrypt ? ::EncryptFile(FileName) : ::DecryptFile(FileName, 0)) != FALSE;
 		}
 
 		security::descriptor get_file_security(const wchar_t* Object, SECURITY_INFORMATION RequestedInformation)
@@ -2219,10 +2222,14 @@ namespace os::fs
 
 	bool GetLongPathName(string_view const ShortPath, string& LongPath)
 	{
+		LongPath = ShortPath;
+		return true;
+		/*
 		return os::detail::ApiDynamicStringReceiver(LongPath, [&](std::span<wchar_t> Buffer)
 		{
 			return ::GetLongPathName(null_terminated(ShortPath).c_str(), Buffer.data(), static_cast<DWORD>(Buffer.size()));
 		});
+		*/
 	}
 
 	bool GetShortPathName(string_view const LongPath, string& ShortPath)
@@ -2260,10 +2267,13 @@ namespace os::fs
 
 	bool GetVolumeNameForVolumeMountPoint(string_view const VolumeMountPoint, string& VolumeName)
 	{
+		if (!imports.GetVolumeNameForVolumeMountPointW)
+			return false;
+
 		wchar_t VolumeNameBuffer[50];
 		auto strVolumeMountPoint = nt_path(VolumeMountPoint);
 		AddEndSlash(strVolumeMountPoint);
-		if (!::GetVolumeNameForVolumeMountPoint(strVolumeMountPoint.c_str(), VolumeNameBuffer, static_cast<DWORD>(std::size(VolumeNameBuffer))))
+		if (!::imports.GetVolumeNameForVolumeMountPointW(strVolumeMountPoint.c_str(), VolumeNameBuffer, static_cast<DWORD>(std::size(VolumeNameBuffer))))
 			return false;
 
 		VolumeName = VolumeNameBuffer;
@@ -2335,7 +2345,7 @@ namespace os::fs
 			}
 			else
 			{
-				return ::GetModuleFileNameEx(hProcess, hModule, Buffer.data(), static_cast<DWORD>(Buffer.size()));
+				return DWORD{};// ::GetModuleFileNameEx(hProcess, hModule, Buffer.data(), static_cast<DWORD>(Buffer.size()));
 			}
 		});
 	}

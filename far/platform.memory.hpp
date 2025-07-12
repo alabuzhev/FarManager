@@ -66,6 +66,9 @@ namespace os::memory
 	bool is_pointer(uintptr_t Address);
 
 	void enable_low_fragmentation_heap();
+
+	[[nodiscard]]
+	bool global_memory_status(MEMORYSTATUSEX& Status);
 }
 
 #endif // PLATFORM_MEMORY_HPP_87E958A6_C4DE_4F53_A9F6_337D97D664E6

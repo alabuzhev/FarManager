@@ -108,6 +108,26 @@ namespace os::memory
 			imports.HeapSetInformation(i, HeapCompatibilityInformation, &HeapFragValue, sizeof(HeapFragValue));
 		}
 	}
+
+	bool global_memory_status(MEMORYSTATUSEX& Status)
+	{
+		if (imports.GlobalMemoryStatusEx)
+			return imports.GlobalMemoryStatusEx(&Status);
+
+		MEMORYSTATUS LegacyStatus{sizeof(LegacyStatus)};
+		GlobalMemoryStatus(&LegacyStatus);
+
+		Status.dwMemoryLoad = LegacyStatus.dwMemoryLoad;
+		Status.ullTotalPhys = LegacyStatus.dwTotalPhys;
+		Status.ullAvailPhys = LegacyStatus.dwAvailPhys;
+		Status.ullTotalPageFile = LegacyStatus.dwTotalPageFile;
+		Status.ullAvailPageFile = LegacyStatus.dwAvailPageFile;
+		Status.ullTotalVirtual = LegacyStatus.dwTotalVirtual;
+		Status.ullAvailVirtual = LegacyStatus.dwAvailVirtual;
+		Status.ullAvailExtendedVirtual = 0;
+
+		return true;
+	}
 }
 
 #ifdef ENABLE_TESTS

@@ -58,6 +58,10 @@ private:
 	const os::rtdl::module
 		MODULE(ntdll),
 		MODULE(kernel32),
+		MODULE(advapi32),
+		MODULE(psapi),
+		MODULE(secur32),
+		MODULE(shfolder),
 		MODULE(shell32),
 		MODULE(user32),
 		MODULE(virtdisk),
@@ -102,7 +106,7 @@ public: \
 	const unique_function_pointer<&imports::m_##MODULE, name_##NAME, stub_##NAME> NAME
 
 	// NT4 < 2k < XP < 2k3 < Vista < 7 < 8 < 10
-	// Rock bottom is 2k
+	// Rock bottom is NT4
 
 	DEFINE_IMPORT_FUNCTION(ntdll, nop, nt,    NTAPI, NTSTATUS, NtQueryDirectoryFile, HANDLE FileHandle, HANDLE Event, PVOID ApcRoutine, PVOID ApcContext, PIO_STATUS_BLOCK IoStatusBlock, PVOID FileInformation, ULONG Length, FILE_INFORMATION_CLASS FileInformationClass, BOOLEAN ReturnSingleEntry, PUNICODE_STRING FileName, BOOLEAN RestartScan); // NT4
 	DEFINE_IMPORT_FUNCTION(ntdll, nop, nt,    NTAPI, NTSTATUS, NtQueryInformationFile, HANDLE FileHandle, PIO_STATUS_BLOCK IoStatusBlock, PVOID FileInformation, ULONG Length, FILE_INFORMATION_CLASS FileInformationClass); // NT4
@@ -132,6 +136,18 @@ public: \
 
 	DEFINE_IMPORT_FUNCTION(kernel32, le, false,   WINAPI,  BOOL,    GetConsoleKeyboardLayoutNameW, LPWSTR Buffer); // NT4
 	DEFINE_IMPORT_FUNCTION(kernel32, le, false,   WINAPI,  BOOL,    SetConsoleKeyShortcuts, BOOL Set, BYTE ReserveKeys, LPVOID AppKeys, DWORD NumAppKeys); // NT4
+	DEFINE_IMPORT_FUNCTION(kernel32, le, nullptr, WINAPI,  HWND,    GetConsoleWindow); // 2k
+	DEFINE_IMPORT_FUNCTION(kernel32, le, handle,  WINAPI,  HANDLE,  CreateJobObjectW, LPSECURITY_ATTRIBUTES JobAttributes, LPCWSTR Name); // 2k
+	DEFINE_IMPORT_FUNCTION(kernel32, le, false,   WINAPI,  BOOL,    SetInformationJobObject, HANDLE Job, JOBOBJECTINFOCLASS JobObjectInformationClass, LPVOID JobObjectInformation, DWORD JobObjectInformationLength); // 2k
+	DEFINE_IMPORT_FUNCTION(kernel32, le, false,   WINAPI,  BOOL,    AssignProcessToJobObject, HANDLE Job, HANDLE Process); // 2k
+	DEFINE_IMPORT_FUNCTION(kernel32, le, false,   WINAPI,  BOOL,    GetCPInfoExW, UINT CodePage, DWORD Flags, LPCPINFOEXW  CPInfoEx); // 2k
+	DEFINE_IMPORT_FUNCTION(kernel32, le, false,   WINAPI,  int,     GetCalendarInfoW, LCID Locale, CALID Calendar, CALTYPE CalType, LPWSTR CalData, int Data, LPDWORD Value); // 2k
+	DEFINE_IMPORT_FUNCTION(kernel32, le, false,   WINAPI,  BOOL,    ReplaceFileW, LPCWSTR ReplacedFileName, LPCWSTR ReplacementFileName, LPCWSTR BackupFileName, DWORD ReplaceFlags, LPVOID Exclude, LPVOID Reserved); // 2k
+	DEFINE_IMPORT_FUNCTION(kernel32, le, false,   WINAPI,  BOOL,    GlobalMemoryStatusEx, LPMEMORYSTATUSEX Buffer); // 2k
+	DEFINE_IMPORT_FUNCTION(kernel32, le, false,   WINAPI,  BOOL,    GetVolumeNameForVolumeMountPointW, LPCWSTR VolumeMountPoint, LPWSTR VolumeName, DWORD BufferLength); // 2k
+	DEFINE_IMPORT_FUNCTION(kernel32, le, false,   WINAPI,  BOOL,    GetComputerNameExW, COMPUTER_NAME_FORMAT NameType, LPWSTR Buffer, LPDWORD Size);
+
+
 	DEFINE_IMPORT_FUNCTION(kernel32, le, false,   WINAPI,  BOOL,    HeapSetInformation, HANDLE HeapHandle, HEAP_INFORMATION_CLASS HeapInformationClass, PVOID HeapInformation, SIZE_T HeapInformationLength); // 2k + KB816542
 	DEFINE_IMPORT_FUNCTION(kernel32, le, nullptr, WINAPI,  PVOID,   AddVectoredExceptionHandler, ULONG First, PVECTORED_EXCEPTION_HANDLER Handler); // XP
 	DEFINE_IMPORT_FUNCTION(kernel32, le, false,   WINAPI,  ULONG,   RemoveVectoredExceptionHandler, PVOID Handle); // XP
@@ -167,8 +183,19 @@ public: \
 	DEFINE_IMPORT_FUNCTION(kernel32, le, hr,      WINAPI,  HRESULT, SetThreadDescription, HANDLE Thread, PCWSTR ThreadDescription); // 10
 	DEFINE_IMPORT_FUNCTION(kernel32, le, hr,      WINAPI,  HRESULT, GetThreadDescription, HANDLE Thread, PWSTR* ThreadDescription); // 10
 
+	DEFINE_IMPORT_FUNCTION(advapi32, le, false,   WINAPI,  BOOL,    ConvertSidToStringSidW, PSID Sid, LPWSTR* StringSid); // 2k
+	DEFINE_IMPORT_FUNCTION(advapi32, le, false,   WINAPI,  BOOL,    ConvertStringSidToSidW, LPCWSTR StringSid, PSID* Sid); // 2k
+
+	DEFINE_IMPORT_FUNCTION(psapi,    le, false,   WINAPI,  BOOL,    EnumProcessModules, HANDLE Process, HMODULE* Module, DWORD Size, LPDWORD SizeNeeded); // 2k
+	DEFINE_IMPORT_FUNCTION(psapi,    le, false,   WINAPI,  BOOL,    GetModuleInformation, HANDLE Process, HMODULE Module, LPMODULEINFO ModuleInfo, DWORD Cb); //2k
+
+	DEFINE_IMPORT_FUNCTION(secur32,  le, false,   SEC_ENTRY, BOOLEAN, GetUserNameExW, EXTENDED_NAME_FORMAT NameFormat, LPWSTR NameBuffer, PULONG Size); // 2k
+
+	DEFINE_IMPORT_FUNCTION(shfolder, nop, hr, STDAPICALLTYPE, HRESULT, SHGetFolderPathW, HWND Hwnd, int Csidl, HANDLE Token, DWORD Flags, LPWSTR Path); // 2k
 	DEFINE_IMPORT_FUNCTION(shell32, nop, hr, STDAPICALLTYPE, HRESULT, SHCreateAssociationRegistration, REFIID riid, void** ppv); // Vista
 
+	DEFINE_IMPORT_FUNCTION(user32, le, nullptr, WINAPI, HMONITOR,     MonitorFromWindow, HWND hwnd, DWORD dwFlags); // 2k
+	DEFINE_IMPORT_FUNCTION(user32, le, false,   WINAPI, BOOL,         GetMonitorInfoW, HMONITOR hMonitor, LPMONITORINFO lpmi);  // 2k
 	DEFINE_IMPORT_FUNCTION(user32, le, nullptr, WINAPI, HPOWERNOTIFY, RegisterPowerSettingNotification, HANDLE hRecipient, LPCGUID PowerSettingGuid, DWORD Flags); // Vista
 	DEFINE_IMPORT_FUNCTION(user32, le, false,   WINAPI, BOOL,         UnregisterPowerSettingNotification, HPOWERNOTIFY Handle); // Vista
 

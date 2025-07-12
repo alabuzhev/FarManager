@@ -400,22 +400,33 @@ static bool grant_duplicate_handle()
 
 static os::handle create_job()
 {
-	os::handle Job(CreateJobObject(nullptr, nullptr));
+	if (!imports.CreateJobObject)
+		return {};
+
+	const auto Job = imports.CreateJobObject({}, {});
 	if (!Job)
 	{
 		LOGERROR(L"CreateJobObject: {}"sv, os::last_error());
-		return nullptr;
+		return {};
 	}
+
+	return os::handle(Job);
+}
+
+static bool set_kill_on_job_close(os::handle const& Job)
+{
+	if (!imports.SetInformationJobObject)
+		return false;
 
 	JOBOBJECT_EXTENDED_LIMIT_INFORMATION jeli{};
 	jeli.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-	if (!SetInformationJobObject(Job.native_handle(), JobObjectExtendedLimitInformation, &jeli, sizeof(jeli)))
+	if (!imports.SetInformationJobObject(Job.native_handle(), JobObjectExtendedLimitInformation, &jeli, sizeof(jeli)))
 	{
 		LOGERROR(L"SetInformationJobObject: {}"sv, os::last_error());
-		return nullptr;
+		return false;
 	}
 
-	return Job;
+	return true;
 }
 
 static os::handle create_elevated_process(const string& Parameters)
@@ -505,10 +516,14 @@ bool elevation::Initialize()
 		return false;
 
 	if (!m_Job)
+	{
 		m_Job = create_job();
+		if (m_Job)
+			set_kill_on_job_close(m_Job);
+	}
 
 	if (m_Job)
-		AssignProcessToJobObject(m_Job.native_handle(), m_Process.native_handle());
+		imports.AssignProcessToJobObject(m_Job.native_handle(), m_Process.native_handle());
 
 	if (!connect_pipe_to_process(m_Process, m_Pipe))
 	{

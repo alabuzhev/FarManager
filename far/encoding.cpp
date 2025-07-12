@@ -43,6 +43,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "exception_handler.hpp"
 #include "plugin.hpp"
 #include "codepage_selection.hpp"
+#include "imports.hpp"
 
 // Platform:
 

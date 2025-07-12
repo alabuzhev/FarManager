@@ -65,6 +65,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform.debug.hpp"
 #include "platform.env.hpp"
 #include "platform.fs.hpp"
+#include "platform.memory.hpp"
 #include "platform.process.hpp"
 #include "platform.version.hpp"
 
@@ -413,7 +414,7 @@ static void read_modules(std::span<HMODULE const> const Modules, string& To, str
 
 	for (const auto& i: Modules)
 	{
-		if (MODULEINFO Info; GetModuleInformation(GetCurrentProcess(), i, &Info, sizeof(Info)))
+		if (MODULEINFO Info; imports.GetModuleInformation(GetCurrentProcess(), i, &Info, sizeof(Info)))
 			far::format_to(To, L"{} - {}"sv, str(Info.lpBaseOfDll), str(std::bit_cast<void*>(std::bit_cast<uintptr_t>(Info.lpBaseOfDll) + Info.SizeOfImage)));
 		else
 			To += str(static_cast<void const*>(i));
@@ -446,6 +447,9 @@ static void read_modules(std::span<HMODULE const> const Modules, string& To, str
 
 static void read_modules(string& To, string_view const Eol)
 {
+	if (!imports.EnumProcessModules)
+		return;
+
 	HMODULE ModulesStatic[1024];
 	std::vector<HMODULE> ModulesDynamic;
 
@@ -455,7 +459,7 @@ static void read_modules(string& To, string_view const Eol)
 
 	for (;;)
 	{
-		if (!EnumProcessModules(GetCurrentProcess(), Data, Size, &Needed))
+		if (!imports.EnumProcessModules(GetCurrentProcess(), Data, Size, &Needed))
 		{
 			const auto LastError = os::last_error();
 			far::format_to(To, L"{}"sv, LastError);
@@ -1136,7 +1140,7 @@ static auto memory_status()
 
 	string MemoryStatus;
 
-	if (MEMORYSTATUSEX ms{ sizeof(ms) }; GlobalMemoryStatusEx(&ms))
+	if (MEMORYSTATUSEX ms{ sizeof(ms) }; os::memory::global_memory_status(ms))
 	{
 		MemoryStatus = far::format(
 			L"{} out of {} free ({}%)"sv,
@@ -1146,10 +1150,12 @@ static auto memory_status()
 		);
 	}
 
+	/*
 	if (PROCESS_MEMORY_COUNTERS pmc{ sizeof(pmc) }; GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc)))
 	{
 		far::format_to(MemoryStatus, L"{}{} used by the process"sv, MemoryStatus.empty()? L""sv : L"; "sv, size_to_str(pmc.PagefileUsage));
 	}
+	*/
 
 	return MemoryStatus;
 }
@@ -1712,7 +1718,7 @@ static string collect_information(
 
 				auto ThreadTitle = far::format(L"Thread {0} / 0x{0:X}"sv, Tid);
 
-				os::handle const Thread(OpenThread(THREAD_QUERY_INFORMATION | THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT, false, Tid));
+				os::handle const Thread;// (OpenThread(THREAD_QUERY_INFORMATION | THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT, false, Tid));
 				if (!Thread)
 				{
 					make_header(ThreadTitle, append_line);

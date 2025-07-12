@@ -40,6 +40,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Internal:
 #include "pathmix.hpp"
 #include "elevation.hpp"
+#include "imports.hpp"
 
 // Platform:
 #include "platform.memory.hpp"
@@ -73,7 +74,7 @@ static bool SidToName(PSID Sid, const string& Computer, string& Name)
 		else
 		{
 			os::memory::local::ptr<wchar_t> StrSid;
-			if (!ConvertSidToStringSid(Sid, &ptr_setter(StrSid)))
+			if (!imports.ConvertSidToStringSidW(Sid, &ptr_setter(StrSid)))
 				return false;
 
 			Name = StrSid.get();
@@ -232,7 +233,7 @@ bool GetFileOwner(const string& Computer, string_view const Object, string& Owne
 static auto get_sid(const string& Computer, const string& Name)
 {
 	os::memory::local::ptr<void> SidFromString;
-	if (ConvertStringSidToSid(Name.c_str(), &ptr_setter(SidFromString)))
+	if (imports.ConvertStringSidToSidW(Name.c_str(), &ptr_setter(SidFromString)))
 	{
 		return sid{ SidFromString.get() };
 	}

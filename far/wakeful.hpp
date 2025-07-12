@@ -48,13 +48,13 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class wakeful: noncopyable
 {
 public:
-	wakeful():PreviousState(SetThreadExecutionState(ES_SYSTEM_REQUIRED|ES_CONTINUOUS))
+	wakeful():PreviousState(/*SetThreadExecutionState(ES_SYSTEM_REQUIRED|ES_CONTINUOUS)*/)
 	{
 	}
 
 	~wakeful()
 	{
-		SetThreadExecutionState(PreviousState);
+		//SetThreadExecutionState(PreviousState);
 	}
 
 private:

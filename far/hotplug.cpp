@@ -77,7 +77,7 @@ A device is considered a HotPlug device if the following are TRUE:
 - does NOT have Capability CM_DEVCAP_SURPRISEREMOVALOK
 - does NOT have Capability CM_DEVCAP_DOCKDEVICE
 */
-
+#if 0
 namespace
 {
 	class [[nodiscard]] enum_child_devices: public enumerator<enum_child_devices, DEVINST>
@@ -475,10 +475,12 @@ static bool RemoveHotplugDriveDevice(const DeviceInfo& Info, bool const Confirm,
 
 	return true;
 }
-
+#endif
 [[nodiscard]]
 bool RemoveHotplugDrive(string_view const Path, bool const Confirm, bool& Cancelled)
 {
+	return false;
+	/*
 	// Removing VHD disk as hotplug is a very bad idea.
 	// Currently OS removes the device but doesn't close the file handle, rendering the file completely unavailable until reboot.
 	if (auto IsVhd = false; detach_vhd(Path, IsVhd))
@@ -525,10 +527,12 @@ bool RemoveHotplugDrive(string_view const Path, bool const Confirm, bool& Cancel
 	}
 
 	return RemoveHotplugDriveDevice(*ItemIterator, Confirm, Cancelled);
+	*/
 }
 
 void ShowHotplugDevices()
 {
+	/*
 	const auto HotPlugList = VMenu2::create(msg(lng::MHotPlugListTitle), {});
 	std::vector<DeviceInfo> Info;
 
@@ -638,4 +642,5 @@ void ShowHotplugDevices()
 		}
 		return KeyProcessed;
 	});
+	*/
 }

@@ -41,6 +41,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "imports.hpp"
 #include "pathmix.hpp"
 #include "log.hpp"
+#include "datetime.hpp"
 
 // Platform:
 #include "platform.hpp"
@@ -288,22 +289,68 @@ namespace os::concurrency
 		}
 	}
 
+#define USE_THREAD_TIMER
+
+#ifdef USE_THREAD_TIMER
+	struct context
+	{
+		thread Thread;
+		event
+			CancelEvent{ event::type::manual, event::state::nonsignaled },
+			TimerEvent{ event::type::manual, event::state::nonsignaled };
+	};
+#else
 	static void CALLBACK wrapper(void* const Parameter, BOOLEAN)
 	{
 		const auto& Callable = view_as<std::function<void()>>(Parameter);
 		Callable();
 	}
+#endif
 
 	void timer::initialise_impl(std::chrono::milliseconds const DueTime, std::chrono::milliseconds Period)
 	{
+#ifdef USE_THREAD_TIMER
+		auto Context = std::make_unique<context>();
+
+		Context->Thread = thread([DueTime, Period, Callable = m_Callable, &CancelEvent = Context->CancelEvent, &TimerEvent = Context->TimerEvent]
+		{
+			if (DueTime != 0s)
+			{
+				HANDLE WaitObjects[]{ CancelEvent.native_handle(), TimerEvent.native_handle() };
+				if (handle::wait_any(DueTime, WaitObjects) == 0uz)
+					return;
+			}
+
+			for (;;)
+			{
+				Callable();
+
+				if (Period == 0s)
+					break;
+
+				HANDLE WaitObjects[]{ CancelEvent.native_handle(), TimerEvent.native_handle() };
+				if (handle::wait_any(Period, WaitObjects) == 0uz)
+					return;
+			}
+		});
+
+		m_Timer.reset(Context.release());
+#else
 		if (!CreateTimerQueueTimer(&ptr_setter(m_Timer), {}, &wrapper, &m_Callable, DueTime / 1ms, Period / 1ms, WT_EXECUTEDEFAULT))
 			throw far_fatal_exception(L"CreateTimerQueueTimer failed"sv);
+#endif
 	}
 
 	void timer::timer_closer::operator()(HANDLE const Handle) const
 	{
+#ifdef USE_THREAD_TIMER
+		std::unique_ptr<context> const Context(static_cast<context*>(Handle));
+		Context->CancelEvent.set();
+		Context->Thread.join();
+#else
 		while (!(DeleteTimerQueueTimer({}, Handle, INVALID_HANDLE_VALUE) || GetLastError() == ERROR_IO_PENDING))
 			LOGWARNING(L"DeleteTimerQueueTimer(): {}"sv, last_error());
+#endif
 	}
 }
 
@@ -427,5 +474,24 @@ TEST_CASE("platform.concurrency.timer")
 
 	Event.wait();
 	REQUIRE(Max == Count);
+}
+
+TEST_CASE("platform.concurrency.timer.cancel")
+{
+	size_t Count{};
+
+	{
+		os::event const Event(os::event::type::manual, os::event::state::nonsignaled);
+
+		os::concurrency::timer const Timer({}, 1h, [&]
+		{
+			++Count;
+			Event.set();
+		});
+
+		Event.wait();
+	}
+
+	REQUIRE(Count == 1uz);
 }
 #endif

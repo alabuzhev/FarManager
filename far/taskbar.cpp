@@ -185,7 +185,7 @@ void taskbar::flash()
 	// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-flashwindowex#return-value
 	// The return value specifies the window's state before the call to the FlashWindowEx function.
 	// We don't care.
-	FlashWindowEx(&FlashInfo);
+	//FlashWindowEx(&FlashInfo);
 }
 
 

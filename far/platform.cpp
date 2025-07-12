@@ -597,10 +597,13 @@ bool GetComputerName(string& Name)
 
 bool GetComputerNameEx(COMPUTER_NAME_FORMAT NameFormat, string& Name)
 {
+	if (!imports.GetComputerNameEx)
+		return false;
+
 	return detail::ApiDynamicStringReceiver(Name, [&](std::span<wchar_t> Buffer)
 	{
 		auto Size = static_cast<DWORD>(Buffer.size());
-		if (!::GetComputerNameEx(NameFormat, Buffer.data(), &Size) && GetLastError() != ERROR_MORE_DATA)
+		if (!imports.GetComputerNameEx(NameFormat, Buffer.data(), &Size) && GetLastError() != ERROR_MORE_DATA)
 			return 0ul;
 		return Size;
 	});
@@ -619,10 +622,13 @@ bool GetUserName(string& Name)
 
 bool GetUserNameEx(EXTENDED_NAME_FORMAT NameFormat, string& Name)
 {
+	if (!imports.GetUserNameEx)
+		return false;
+
 	return detail::ApiDynamicStringReceiver(Name, [&](std::span<wchar_t> Buffer)
 	{
 		auto Size = static_cast<DWORD>(Buffer.size());
-		if (!::GetUserNameEx(NameFormat, Buffer.data(), &Size) && GetLastError() != ERROR_MORE_DATA)
+		if (!imports.GetUserNameEx(NameFormat, Buffer.data(), &Size) && GetLastError() != ERROR_MORE_DATA)
 			return 0ul;
 		return Size;
 	});

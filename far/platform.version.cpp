@@ -119,14 +119,18 @@ namespace os::version
 	}
 
 
+	/*
 	template<DWORD... Components>
 	static unsigned long long condition_mask(DWORD const Operation)
 	{
 		return (... | VerSetConditionMask(0, Components, Operation));
 	}
+	*/
 
 	bool is_win10_build_or_later(DWORD const Build)
 	{
+		return false;
+		/*
 		OSVERSIONINFOEXW osvi
 		{
 			sizeof(osvi),
@@ -147,6 +151,7 @@ namespace os::version
 			VER_MINORVERSION |
 			VER_BUILDNUMBER,
 			ConditionMask) != FALSE;
+		*/
 	}
 
 	bool is_win10_1607_or_later()

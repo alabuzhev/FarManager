@@ -734,7 +734,12 @@ protected:
 
 	HWND console::GetWindow() const
 	{
-		const auto Window = GetConsoleWindow();
+		if (!imports.GetConsoleWindow)
+			return {};
+
+		const auto Window = imports.GetConsoleWindow();
+		if (!Window)
+			return {};
 
 		if (is_pseudo_console(Window))
 		{
@@ -2538,9 +2543,9 @@ protected:
 			return false;
 
 		// If we got here, it is either legit or they used some fallback 1x1 font and the proportions are not screwed enough to fail the checks above.
-		if (const auto Monitor = MonitorFromWindow(::console.GetWindow(), MONITOR_DEFAULTTONEAREST))
+		if (const auto Monitor = imports.MonitorFromWindow(::console.GetWindow(), MONITOR_DEFAULTTONEAREST))
 		{
-			if (MONITORINFO Info{ sizeof(Info) }; GetMonitorInfo(Monitor, &Info))
+			if (MONITORINFO Info{ sizeof(Info) }; imports.GetMonitorInfoW(Monitor, &Info))
 			{
 				// The smallest selectable in the UI font is 5x2. Anything smaller than that is likely rubbish and unreadable anyway.
 				if (const auto AssumedFontHeight = (Info.rcWork.bottom - Info.rcWork.top) / Size.y; AssumedFontHeight < 5)
